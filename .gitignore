@@ -1,0 +1,9 @@
+*.tfstate
+*.backup
+.terraform/*
+.terraform.lock.hcl
+*.tfvars
+*.pem
+myenv/*
+*.ini
+server.tf
