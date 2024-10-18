@@ -2,8 +2,8 @@
 ansible_ssh_common_args='-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
 
 [controller_group]
-${controller_dns} ansible_host=${controller_ip} ansible_user=${ansible_user} ansible_ssh_private_key_file=${ssh_private_key}
+${k8s_control_dns} ansible_host=${k8s_control_ip} ansible_user=${ansible_user} ansible_ssh_private_key_file=${ssh_private_key}
 
-[compute_group]
-${compute_dns} ansible_host=${compute_ip} ansible_user=${ansible_user} ansible_ssh_private_key_file=${ssh_private_key}
+[worker_group]
+${k8s_worker_dns} ansible_host=${k8s_worker_ip} ansible_user=${ansible_user} ansible_ssh_private_key_file=${ssh_private_key}
 

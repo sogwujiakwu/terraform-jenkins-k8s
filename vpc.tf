@@ -1,3 +1,3 @@
-/*resource "google_compute_network" "openstack_vpc_network" {
-  name = "openstack-network"
+/*resource "google_compute_network" "k8s_vpc_network" {
+  name = "k8s-network"
 }*/
