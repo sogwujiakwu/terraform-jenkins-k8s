@@ -124,7 +124,7 @@
         state: restarted
 
 - name: Initialize the Kubernetes Control-Plane Node and Install Cilium
-  hosts: controller_group
+  hosts: k8s_control_nodes    
   become: true
   tasks:
     # Step 8: Initialize the Kubernetes control-plane node
