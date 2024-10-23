@@ -124,8 +124,10 @@
         state: restarted
 
 - name: Initialize the Kubernetes Control-Plane Node and Install Cilium
-  hosts: k8s_control_nodes    
+  hosts: first_k8s_control_node    
   become: true
+  vars_files:
+    - vars.yaml
   tasks:
     # Step 8: Initialize the Kubernetes control-plane node
 
@@ -146,24 +148,24 @@
     # Step 9: Set up kubectl for user
     - name: Create .kube directory for sudo user
       ansible.builtin.file:
-        path: "/home/devopsokeke/.kube"
+        path: "{{ kube_dir }}"
         state: directory
         mode: '0755'
       become: yes
-      become_user: devopsokeke
+      become_user: "{{ sudo_user }}"
 
     - name: Copy admin.conf to user's kube config
       ansible.builtin.copy:
         src: /etc/kubernetes/admin.conf
-        dest: "/home/devopsokeke/.kube/config"
-        owner: devopsokeke
-        group: devopsokeke
+        dest: "{{ kube_dir }}/config"
+        owner: "{{ sudo_user }}"
+        group: "{{ sudo_user }}"
         mode: '0644'
         remote_src: yes  # Indicates that the file is on the remote host
       become: yes   
 
     - name: Set ownership of kubeconfig file to sudo user
-      ansible.builtin.command: chown devopsokeke:devopsokeke /home/devopsokeke/.kube/config
+      ansible.builtin.command: chown "{{ sudo_user }}":"{{ sudo_user}}" "/home/{{ sudo_user}}/.kube/config"
       become: yes
 
     # Step 10: Install Cilium CLI and CNI

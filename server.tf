@@ -1,11 +1,3 @@
-variable "zone" {
-  default = "__ZONE_PLACEHOLDER__"
-}
-
-variable "username" {
-  default = "__SSH_USERNAME__"
-}
-
 resource "google_compute_instance" "k8s_control" {
   for_each             = toset(["01", "03", "02"])
   name         = "k8s-control-${each.value}"

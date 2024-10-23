@@ -6,4 +6,5 @@
 *.pem
 myenv/*
 *.ini
-server.tf
+vars.yaml
+vars.tf

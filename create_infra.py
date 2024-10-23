@@ -27,14 +27,21 @@ def get_gcp_zones(project_id, credentials_file):
 
     return zones
 
-# Create a Terraform configuration file for the current zone
-def create_terraform_file_for_zone(zone, ssh_username):
-    with open("server.tf", 'w') as file:
-        with open("server_tf_template", 'r') as template:
+
+# Create Terraform and Ansible variables files for the current zone
+def create_variables_file(zone, ssh_username):
+    with open("vars.yaml", 'w') as  file:
+        with open("ansible_vars_template", 'r') as template:
             data = template.read()
-            data = data.replace('__ZONE_PLACEHOLDER__', zone)
             data = data.replace('__SSH_USERNAME__', ssh_username)
             file.write(data)
+    with open("vars.tf", 'w') as file:
+        with open("terraform_vars_template", 'r') as template:
+            data = template.read()
+            data = data.replace('__SSH_USERNAME__', ssh_username)
+            data = data.replace('__ZONE_PLACEHOLDER__', zone)
+            file.write(data)
+
 
 # Run a Terraform command using subprocess
 def run_terraform_command(command):
@@ -51,8 +58,9 @@ def apply_terraform_in_zones(zones, ssh_username):
     for zone in zones:
         print(f"Trying to create the VM in zone: {zone}")
 
-        # Create a unique Terraform configuration file for the current zone
-        create_terraform_file_for_zone(zone, ssh_username)
+        # Create a unique Terraform and Ansible variables files for the current zone
+        create_variables_file(zone, ssh_username)
+
 
         # Run terraform commands
         print("Initializing Terraform...")
@@ -85,6 +93,7 @@ if __name__ == "__main__":
     # Get available zones from GCP
     zones = get_gcp_zones(PROJECT_ID, CREDENTIALS_FILE)
     print(f"Available zones: {zones}")
+
 
     # Apply Terraform configuration for each zone
     apply_terraform_in_zones(zones, ssh_username)

@@ -1,0 +1,7 @@
+variable "zone" {
+  default = "__ZONE_PLACEHOLDER__"
+}
+
+variable "username" {
+  default = "__SSH_USERNAME__"
+}

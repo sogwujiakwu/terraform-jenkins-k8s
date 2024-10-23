@@ -1,0 +1,3 @@
+sudo_user: "__SSH_USERNAME__"
+kube_dir: "/home/__SSH_USERNAME__/.kube"
+

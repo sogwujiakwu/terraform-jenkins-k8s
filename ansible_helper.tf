@@ -7,16 +7,18 @@ data "template_file" "ansible_inventory" {
     k8s_controls = jsonencode([
       for control in google_compute_instance.k8s_control :
       {
-        dns = control.network_interface[0].access_config[0].nat_ip, # Public IP
-        ip  = control.network_interface[0].network_ip               # Private IP
+        name = control.name                                          # Node Name
+        dns  = control.network_interface[0].access_config[0].nat_ip  # Public IP
+        ip   = control.network_interface[0].network_ip               # Private IP
       }
     ])
 
     k8s_workers = jsonencode([
       for worker in google_compute_instance.k8s_worker :
       {
-        dns = worker.network_interface[0].access_config[0].nat_ip, # Public IP
-        ip  = worker.network_interface[0].network_ip               # Private IP
+        name = worker.name                                          # Node Name
+        dns  = worker.network_interface[0].access_config[0].nat_ip  # Public IP
+        ip   = worker.network_interface[0].network_ip               # Private IP
       }
     ])
 
