@@ -1,5 +1,5 @@
 resource "google_compute_instance" "k8s_control" {
-  for_each             = toset(["01", "03", "02"])
+  for_each     = toset(["01", "03", "02"])
   name         = "k8s-control-${each.value}"
   machine_type = "n1-standard-4"
   zone         = var.zone
@@ -21,7 +21,7 @@ resource "google_compute_instance" "k8s_control" {
   }
 }
 resource "google_compute_instance" "k8s_worker" {
-  for_each = toset(["01", "02"])
+  for_each     = toset(["01", "02"])
   name         = "k8s-worker-${each.value}"
   machine_type = "n1-standard-4"
   zone         = var.zone
@@ -47,6 +47,7 @@ resource "google_compute_instance" "k8s_worker" {
   }
 
 }
+/*
 resource "google_compute_instance" "k8s_workstation" {
   name         = "k8s-workstation"
   machine_type = "n1-standard-4"
@@ -69,3 +70,4 @@ resource "google_compute_instance" "k8s_workstation" {
 
   }
 }
+*/

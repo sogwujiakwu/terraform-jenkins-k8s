@@ -128,11 +128,12 @@
   become: true
   vars_files:
     - vars.yaml
+    - ansible_lb_vars.yaml
   tasks:
     # Step 8: Initialize the Kubernetes control-plane node
 
     - name: Initialize Kubernetes control-plane node
-      command: kubeadm init --apiserver-advertise-address={{ hostvars[inventory_hostname]['ansible_host'] }}
+      command: kubeadm init --apiserver-advertise-address={{ hostvars[inventory_hostname]['ansible_host'] }} --control-plane-endpoint "{{ k8s_control_lb }}":6443 --upload-certs >> cluster.txt        
       async: 3600  # Allow up to 1 hour for the task to complete
       poll: 0  # Start the task in the background and return immediately
       register: init_kubeadm_result

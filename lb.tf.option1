@@ -1,0 +1,62 @@
+resource "google_compute_http_health_check" "k8s_control_health_check" {
+  name               = "k8s-control-http-health-check"
+  request_path       = "/"
+  port               = 6443
+  check_interval_sec = 5
+  timeout_sec        = 5
+}
+
+
+resource "google_compute_target_pool" "k8s_control_pool" {
+  name          = "k8s-control-pool"
+  health_checks = [google_compute_http_health_check.k8s_control_health_check.self_link]
+  region        = var.region
+
+  instances = [
+    for control in google_compute_instance.k8s_control : control.self_link
+  ]
+}
+
+# Reserve a regional external IP address for the regional load balancer
+resource "google_compute_address" "k8s_lb_ip" {
+  name   = "k8s-lb-ip"
+  region = var.region  # Specify your region here
+}
+
+# Forwarding rule for the regional load balancer
+resource "google_compute_forwarding_rule" "k8s_control_forwarding_rule" {
+  name                  = "k8s-control-forwarding-rule"
+  target                = google_compute_target_pool.k8s_control_pool.self_link
+  port_range            = "6443"
+  load_balancing_scheme = "EXTERNAL"
+  ip_protocol           = "TCP"
+
+  ip_address = google_compute_address.k8s_lb_ip.address
+  region     = var.region  # Ensure the region matches
+}
+
+
+# Reserve a global external IP address for the load balancer
+/*
+resource "google_compute_global_address" "k8s_lb_ip" {
+  name = "k8s-lb-ip"
+}
+
+# Forwarding rule for the load balancer
+resource "google_compute_forwarding_rule" "k8s_control_forwarding_rule" {
+  name                  = "k8s-control-forwarding-rule"
+  target                = google_compute_target_pool.k8s_control_pool.self_link
+  port_range            = "6443"
+  load_balancing_scheme = "EXTERNAL"
+  ip_protocol           = "TCP"
+
+  ip_address = google_compute_global_address.k8s_lb_ip.address
+  # Use regional if necessary instead of global address
+  region     = var.region  # Specify region if using regional load balancer
+}
+*/
+
+variable "region" {
+  default = "us-east1"
+}
+

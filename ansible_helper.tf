@@ -7,18 +7,18 @@ data "template_file" "ansible_inventory" {
     k8s_controls = jsonencode([
       for control in google_compute_instance.k8s_control :
       {
-        name = control.name                                          # Node Name
-        dns  = control.network_interface[0].access_config[0].nat_ip  # Public IP
-        ip   = control.network_interface[0].network_ip               # Private IP
+        name = control.name                                         # Node Name
+        dns  = control.network_interface[0].access_config[0].nat_ip # Public IP
+        ip   = control.network_interface[0].network_ip              # Private IP
       }
     ])
 
     k8s_workers = jsonencode([
       for worker in google_compute_instance.k8s_worker :
       {
-        name = worker.name                                          # Node Name
-        dns  = worker.network_interface[0].access_config[0].nat_ip  # Public IP
-        ip   = worker.network_interface[0].network_ip               # Private IP
+        name = worker.name                                         # Node Name
+        dns  = worker.network_interface[0].access_config[0].nat_ip # Public IP
+        ip   = worker.network_interface[0].network_ip              # Private IP
       }
     ])
 
@@ -41,3 +41,10 @@ resource "local_file" "ansible_inventory" {
   ]
 }
 
+# Output the IP address of the load balancer to a local file
+resource "local_file" "ansible_lb_vars_file" {
+  content  = <<-DOC
+      k8s_control_lb: ${google_compute_address.k8s_lb_ip.address}
+  DOC
+  filename = "ansible_lb_vars.yaml"
+}
