@@ -45,3 +45,14 @@ output "k8s_workers_info" {
     "${worker.name} ${worker.network_interface[0].access_config[0].nat_ip} ${worker.network_interface[0].network_ip}"
   ]
 }
+
+output "k8s_controls_selflink" {
+  value = [
+    for control in google_compute_instance.k8s_control :
+    "${control.self_link}"
+  ]
+}
+
+output "k8s_control-01_selflink" {
+   value = google_compute_instance.k8s_control["01"].self_link
+}
