@@ -8,7 +8,7 @@ data "template_file" "ansible_inventory" {
       for control in google_compute_instance.k8s_control :
       {
         name = control.name                                         # Node Name
-        dns  = control.network_interface[0].access_config[0].nat_ip # Public IP
+        #dns  = control.network_interface[0].access_config[0].nat_ip # Public IP
         ip   = control.network_interface[0].network_ip              # Private IP
       }
     ])
@@ -17,7 +17,7 @@ data "template_file" "ansible_inventory" {
       for worker in google_compute_instance.k8s_worker :
       {
         name = worker.name                                         # Node Name
-        dns  = worker.network_interface[0].access_config[0].nat_ip # Public IP
+        #dns  = worker.network_interface[0].access_config[0].nat_ip # Public IP
         ip   = worker.network_interface[0].network_ip              # Private IP
       }
     ])

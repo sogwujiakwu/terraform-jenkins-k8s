@@ -35,14 +35,14 @@ output "k8s_workers_ip" {
 output "k8s_controls_info" {
   value = [
     for control in google_compute_instance.k8s_control :
-    "${control.name} ${control.network_interface[0].access_config[0].nat_ip} ${control.network_interface[0].network_ip}"
+    "${control.name} ${control.network_interface[0].network_ip}"
   ]
 }
 
 output "k8s_workers_info" {
   value = [
     for worker in google_compute_instance.k8s_worker :
-    "${worker.name} ${worker.network_interface[0].access_config[0].nat_ip} ${worker.network_interface[0].network_ip}"
+    "${worker.name} ${worker.network_interface[0].network_ip}"
   ]
 }
 

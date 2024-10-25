@@ -8,3 +8,4 @@ myenv/*
 *.ini
 vars.yaml
 vars.tf
+*.env

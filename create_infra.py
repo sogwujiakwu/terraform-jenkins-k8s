@@ -2,14 +2,19 @@ import os
 import subprocess
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+from dotenv import load_dotenv
 
 # Set the directory where your Terraform files are located
 terraform_directory = ""
 # os.chdir(terraform_directory)
 
+load_dotenv("config.env")  # specify the filename
+project_id = os.getenv("PROJECT_ID")
+credentials_file = os.getenv("CREDENTIALS_FILE")
+
 # Google Cloud project and credentials
-PROJECT_ID = "smart-nomad-433514-k5"
-CREDENTIALS_FILE = "../terraform-sa.json"
+PROJECT_ID = project_id
+CREDENTIALS_FILE = credentials_file
 
 # Get the list of available zones in the region
 def get_gcp_zones(project_id, credentials_file):

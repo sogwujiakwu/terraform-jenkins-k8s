@@ -13,8 +13,8 @@ resource "google_compute_instance" "k8s_control" {
   can_ip_forward = true
   network_interface {
     network = "default"
-    access_config {
-    }
+    /*access_config {
+    }*/
   }
   metadata = {
     ssh-keys = "${var.username}:${tls_private_key.ssh.public_key_openssh}"
@@ -36,8 +36,8 @@ resource "google_compute_instance" "k8s_worker" {
   network_interface {
     #network = google_compute_network.default.name
     network = "default"
-    access_config {
-    }
+    /*access_config {
+    }*/
   }
 
   metadata = {
