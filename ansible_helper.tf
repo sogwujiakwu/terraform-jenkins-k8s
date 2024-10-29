@@ -7,23 +7,23 @@ data "template_file" "ansible_inventory" {
     k8s_controls = jsonencode([
       for control in google_compute_instance.k8s_control :
       {
-        name = control.name                                         # Node Name
+        name = control.name # Node Name
         #dns  = control.network_interface[0].access_config[0].nat_ip # Public IP
-        ip   = control.network_interface[0].network_ip              # Private IP
+        ip = control.network_interface[0].network_ip # Private IP
       }
     ])
 
     k8s_workers = jsonencode([
       for worker in google_compute_instance.k8s_worker :
       {
-        name = worker.name                                         # Node Name
+        name = worker.name # Node Name
         #dns  = worker.network_interface[0].access_config[0].nat_ip # Public IP
-        ip   = worker.network_interface[0].network_ip              # Private IP
+        ip = worker.network_interface[0].network_ip # Private IP
       }
     ])
 
     ansible_user    = var.username
-    ssh_private_key = local_file.openstack_ssh_key.filename
+    ssh_private_key = local_file.k8s_ssh_key.filename
   }
 }
 
@@ -37,7 +37,7 @@ resource "local_file" "ansible_inventory" {
     google_compute_instance.k8s_control,
     google_compute_instance.k8s_worker,
     tls_private_key.ssh,
-    local_file.openstack_ssh_key
+    local_file.k8s_ssh_key
   ]
 }
 

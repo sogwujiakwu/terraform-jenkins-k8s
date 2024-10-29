@@ -16,10 +16,14 @@ credentials_file = os.getenv("CREDENTIALS_FILE")
 PROJECT_ID = project_id
 CREDENTIALS_FILE = credentials_file
 
+# Authenticate and build the API service
+credentials = service_account.Credentials.from_service_account_file(CREDENTIALS_FILE)
+service = build('compute', 'v1', credentials=credentials)
+
 # Get the list of available zones in the region
 def get_gcp_zones(project_id, credentials_file):
-    credentials = service_account.Credentials.from_service_account_file(credentials_file)
-    service = build('compute', 'v1', credentials=credentials)
+   # credentials = service_account.Credentials.from_service_account_file(credentials_file)
+   # service = build('compute', 'v1', credentials=credentials)
 
     request = service.zones().list(project=project_id)
     zones = []
@@ -32,9 +36,17 @@ def get_gcp_zones(project_id, credentials_file):
 
     return zones
 
+# Function to retrieve the region for a specific zone
+def get_region_for_zone(zone):
+    request = service.zones().get(project=PROJECT_ID, zone=zone)
+    response = request.execute()
+    # Extract the region part from the full URL
+    region = response['region'].split('/')[-1]
+    return region
+
 
 # Create Terraform and Ansible variables files for the current zone
-def create_variables_file(zone, ssh_username):
+def create_variables_file(region, zone, ssh_username):
     with open("vars.yaml", 'w') as  file:
         with open("ansible_vars_template", 'r') as template:
             data = template.read()
@@ -45,6 +57,7 @@ def create_variables_file(zone, ssh_username):
             data = template.read()
             data = data.replace('__SSH_USERNAME__', ssh_username)
             data = data.replace('__ZONE_PLACEHOLDER__', zone)
+            data = data.replace('__REGION_PLACEHOLDER__', region)
             file.write(data)
 
 
@@ -63,8 +76,16 @@ def apply_terraform_in_zones(zones, ssh_username):
     for zone in zones:
         print(f"Trying to create the VM in zone: {zone}")
 
+        # Query GCP to get the region for the zone
+        try:
+            region = get_region_for_zone(zone)
+            print(f"Using region: {region}")
+        except Exception as e:
+            print(f"Error retrieving region for zone {zone}: {e}")
+            continue
+
         # Create a unique Terraform and Ansible variables files for the current zone
-        create_variables_file(zone, ssh_username)
+        create_variables_file(region, zone, ssh_username)
 
 
         # Run terraform commands

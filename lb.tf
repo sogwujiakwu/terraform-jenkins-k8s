@@ -51,7 +51,7 @@ resource "google_compute_forwarding_rule" "k8s_control_forwarding_rule" {
 }
 
 # Define your region as a variable
-variable "region" {
+/*variable "region" {
   default = "us-east1"
-}
+}*/
 

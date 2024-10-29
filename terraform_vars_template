@@ -5,3 +5,7 @@ variable "zone" {
 variable "username" {
   default = "__SSH_USERNAME__"
 }
+
+variable "region" {
+  default = "__REGION_PLACEHOLDER__"
+}

@@ -12,7 +12,9 @@ resource "google_compute_instance" "k8s_control" {
   }
   can_ip_forward = true
   network_interface {
-    network = "default"
+    #network = "default"
+    network    = google_compute_network.k8s_vpc_network.self_link
+    subnetwork = google_compute_subnetwork.k8s_network_private_subnet.self_link    
     /*access_config {
     }*/
   }
@@ -23,7 +25,7 @@ resource "google_compute_instance" "k8s_control" {
 resource "google_compute_instance" "k8s_worker" {
   for_each     = toset(["01", "02"])
   name         = "k8s-worker-${each.value}"
-  machine_type = "n1-standard-4"
+  machine_type = "n1-standard-2"
   zone         = var.zone
   tags         = ["k8s-worker", "kubernetes"]
   boot_disk {
@@ -35,7 +37,9 @@ resource "google_compute_instance" "k8s_worker" {
   can_ip_forward = true
   network_interface {
     #network = google_compute_network.default.name
-    network = "default"
+    #network = "default"
+    network    = google_compute_network.k8s_vpc_network.self_link
+    subnetwork = google_compute_subnetwork.k8s_network_private_subnet.self_link
     /*access_config {
     }*/
   }
@@ -47,10 +51,10 @@ resource "google_compute_instance" "k8s_worker" {
   }
 
 }
-/*
+
 resource "google_compute_instance" "k8s_workstation" {
   name         = "k8s-workstation"
-  machine_type = "n1-standard-4"
+  machine_type = "n1-standard-2"
   zone         = var.zone
   tags         = ["k8s-workstation", "kubernetes"]
   boot_disk {
@@ -61,7 +65,9 @@ resource "google_compute_instance" "k8s_workstation" {
   }
   can_ip_forward = true
   network_interface {
-    network = "default"
+    #network = "default"
+    network    = google_compute_network.k8s_vpc_network.self_link
+    subnetwork = google_compute_subnetwork.k8s_network_public_subnet.self_link    
     access_config {
     }
   }
@@ -70,4 +76,4 @@ resource "google_compute_instance" "k8s_workstation" {
 
   }
 }
-*/
+

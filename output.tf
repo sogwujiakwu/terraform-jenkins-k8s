@@ -1,5 +1,5 @@
 output "ssh_private_key" {
-  value = local_file.openstack_ssh_key.filename
+  value = local_file.k8s_ssh_key.filename
 }
 
 output "ansible_inventory_content" {
@@ -54,5 +54,5 @@ output "k8s_controls_selflink" {
 }
 
 output "k8s_control-01_selflink" {
-   value = google_compute_instance.k8s_control["01"].self_link
+  value = google_compute_instance.k8s_control["01"].self_link
 }
