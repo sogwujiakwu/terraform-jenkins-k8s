@@ -97,5 +97,6 @@ resource "google_compute_instance" "k8s_workstation" {
       echo "Startup script completed successfully" >> /var/log/startup-script.log
 
     EOF
+
 }
 
