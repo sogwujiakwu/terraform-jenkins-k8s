@@ -14,7 +14,7 @@ resource "google_compute_instance" "k8s_control" {
   network_interface {
     #network = "default"
     network    = google_compute_network.k8s_vpc_network.self_link
-    subnetwork = google_compute_subnetwork.k8s_network_private_subnet.self_link    
+    subnetwork = google_compute_subnetwork.k8s_network_private_subnet.self_link
     /*access_config {
     }*/
   }
@@ -67,13 +67,35 @@ resource "google_compute_instance" "k8s_workstation" {
   network_interface {
     #network = "default"
     network    = google_compute_network.k8s_vpc_network.self_link
-    subnetwork = google_compute_subnetwork.k8s_network_public_subnet.self_link    
+    subnetwork = google_compute_subnetwork.k8s_network_public_subnet.self_link
     access_config {
     }
   }
   metadata = {
-    ssh-keys = "${var.username}:${tls_private_key.ssh.public_key_openssh}"
-
+    ssh-keys                = "${var.username}:${tls_private_key.ssh.public_key_openssh}"
   }
+
+  metadata_startup_script = <<-EOF
+      #!/bin/bash
+      # Configure SSH to accept rsa keys
+      echo "PubkeyAcceptedKeyTypes=+ssh-rsa" >> /etc/ssh/sshd_config.d/10-insecure-rsa-keysig.conf
+      systemctl reload sshd
+
+      # Add private key for user authentication
+      echo "${tls_private_key.ssh.private_key_pem}" >> /home/${var.username}/.ssh/id_rsa      
+      chown ${var.username}:${var.username} /home/${var.username}/.ssh/id_rsa
+      chgrp ${var.username} /home/${var.username}/.ssh/id_rsa      
+      chmod 600 /home/${var.username}/.ssh/id_rsa
+
+      # Install Ansible
+      echo "Starting Ansible installation"
+      apt-add-repository ppa:ansible/ansible -y
+      apt update
+      apt install ansible -y
+
+      # Log the completion of the startup script
+      echo "Startup script completed successfully" >> /var/log/startup-script.log
+
+    EOF
 }
 

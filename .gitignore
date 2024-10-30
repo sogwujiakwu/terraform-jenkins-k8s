@@ -9,3 +9,4 @@ myenv/*
 vars.yaml
 vars.tf
 *.env
+ansible_lb_vars.yaml
