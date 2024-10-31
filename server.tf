@@ -72,7 +72,7 @@ resource "google_compute_instance" "k8s_workstation" {
     }
   }
   metadata = {
-    ssh-keys                = "${var.username}:${tls_private_key.ssh.public_key_openssh}"
+    ssh-keys = "${var.username}:${tls_private_key.ssh.public_key_openssh}"
   }
 
   metadata_startup_script = <<-EOF

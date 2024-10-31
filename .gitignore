@@ -6,7 +6,7 @@
 *.pem
 myenv/*
 *.ini
-vars.yaml
+ansible/vars.yaml
 vars.tf
 *.env
-ansible_lb_vars.yaml
+ansible/ansible_lb_vars.yaml

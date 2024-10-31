@@ -46,5 +46,88 @@ resource "local_file" "ansible_lb_vars_file" {
   content  = <<-DOC
       k8s_control_lb: ${google_compute_address.k8s_lb_ip.address}
   DOC
-  filename = "ansible_lb_vars.yaml"
+  filename = "ansible/ansible_lb_vars.yaml"
+}
+
+resource "null_resource" "wait_for_workstation_init" {
+  depends_on = [google_compute_instance.k8s_workstation]
+
+  triggers = {
+    always_run = timestamp()
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/wait_for_workstation_init.sh"
+    destination = "/tmp/wait_for_workstation_init.sh"
+  }
+
+  connection {
+    type        = "ssh"
+    host        = google_compute_instance.k8s_workstation.network_interface[0].access_config[0].nat_ip
+    user        = var.username
+    private_key = tls_private_key.ssh.private_key_pem
+    insecure    = true
+    agent       = false
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x /tmp/wait_for_workstation_init.sh",
+      "/tmp/wait_for_workstation_init.sh"
+    ]
+  }
+}
+
+resource "null_resource" "provisioner" {
+  depends_on = [
+    local_file.ansible_inventory,
+    null_resource.wait_for_workstation_init,
+    google_compute_instance.k8s_workstation
+  ]
+
+  triggers = {
+    "always_run" = timestamp()
+  }
+
+  provisioner "file" {
+    source      = "${path.root}/inventory.ini"
+    destination = "/home/${var.username}/inventory.ini"
+
+    connection {
+      type        = "ssh"
+      host        = google_compute_instance.k8s_workstation.network_interface[0].access_config[0].nat_ip
+      user        = var.username
+      private_key = tls_private_key.ssh.private_key_pem
+      agent       = false
+      insecure    = true
+    }
+  }
+}
+
+resource "null_resource" "copy_ansible_playbooks" {
+  depends_on    = [
+    null_resource.provisioner,
+    null_resource.wait_for_workstation_init,
+    google_compute_instance.k8s_workstation,
+    local_file.ansible_lb_vars_file
+    ]
+
+  triggers = {
+    "always_run" = timestamp()
+  }
+
+  provisioner "file" {
+      source = "${path.root}/ansible"
+      destination = "/home/${var.username}/ansible/"
+
+      connection {
+        type        = "ssh"
+        host        = google_compute_instance.k8s_workstation.network_interface[0].access_config[0].nat_ip
+        user        = var.username
+        private_key = tls_private_key.ssh.private_key_pem
+        insecure    = true
+        agent         = false
+      }
+    
+  }
 }

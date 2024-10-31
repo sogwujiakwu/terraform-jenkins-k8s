@@ -47,8 +47,8 @@ def get_region_for_zone(zone):
 
 # Create Terraform and Ansible variables files for the current zone
 def create_variables_file(region, zone, ssh_username):
-    with open("vars.yaml", 'w') as  file:
-        with open("ansible_vars_template", 'r') as template:
+    with open("ansible/vars.yaml", 'w') as  file:
+        with open("ansible/ansible_vars_template", 'r') as template:
             data = template.read()
             data = data.replace('__SSH_USERNAME__', ssh_username)
             file.write(data)

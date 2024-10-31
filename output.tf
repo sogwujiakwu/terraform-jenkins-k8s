@@ -56,3 +56,7 @@ output "k8s_controls_selflink" {
 output "k8s_control-01_selflink" {
   value = google_compute_instance.k8s_control["01"].self_link
 }
+
+output "k8s_workstation_public_ip" {
+  value = google_compute_instance.k8s_workstation.network_interface[0].access_config[0].nat_ip
+}
