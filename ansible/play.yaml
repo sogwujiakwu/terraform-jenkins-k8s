@@ -133,7 +133,7 @@
     # Step 8: Initialize the Kubernetes control-plane node
 
     - name: Initialize Kubernetes control-plane node
-      command: kubeadm init --apiserver-advertise-address={{ hostvars[inventory_hostname]['ansible_host'] }} --control-plane-endpoint "{{ k8s_control_lb }}":6443 --upload-certs >> cluster.txt        
+      shell: kubeadm init --apiserver-advertise-address={{ hostvars[inventory_hostname]['ansible_host'] }} --control-plane-endpoint "{{ k8s_control_lb }}":6443 --upload-certs >> cluster.txt        
       async: 3600  # Allow up to 1 hour for the task to complete
       poll: 0  # Start the task in the background and return immediately
       register: init_kubeadm_result
@@ -193,21 +193,50 @@
       become: yes
 
     - name: Install Cilium as CNI
-      command: cilium install
+      command: cilium install --set ipam.mode=cluster-pool --set ipam.operator.clusterPoolIPv4PodCIDRList=192.168.0.0/16 --set ipam.operator.clusterPoolIPv4MaskSize=24
       environment:
         KUBECONFIG: /etc/kubernetes/admin.conf
       become: yes   
 
-    - name: Ensure Cilium is fully operational
-      command: cilium status
-      environment:
-        KUBECONFIG: /etc/kubernetes/admin.conf
-      register: cilium_status_full_output
-      until: "'Cilium: OK' in cilium_status_full_output.stdout and 'Operator: OK' in cilium_status_full_output.stdout and 'Envoy DaemonSet: OK' in cilium_status_full_output.stdout"
-      retries: 5
-      delay: 15
+- name: Display and Check Kubernetes Node Status
+  hosts: first_k8s_control_node
+  gather_facts: no
+
+  tasks:
+    - name: Get the list of Kubernetes nodes and their status
+      command: kubectl get nodes -o json
+      register: nodes_output
       changed_when: false
-    
-    - name: Output Cilium status
+
+    - name: Ensure the command was successful
+      fail:
+        msg: "Failed to get nodes: {{ nodes_output.stderr }}"
+      when: nodes_output.rc != 0
+
+    - name: Parse the JSON output
+      set_fact:
+        nodes_data: "{{ nodes_output.stdout | from_json }}"
+
+    - name: Debug the parsed node data
       debug:
-        msg: "{{ cilium_status_full_output.stdout }}"
+        var: nodes_data
+
+    - name: Check the type of nodes_data
+      debug:
+        msg: "Type of nodes_data: {{ nodes_data | type_debug }}"
+
+    - name: Check if nodes_data is structured correctly
+      debug:
+        msg: "Checking if items exist: {{ nodes_data.get('items', []) | length }}"
+
+    - name: Display node statuses
+      debug:
+        msg: |
+          {% if nodes_data.get('items', []) | length > 0 %}
+          {% for node in nodes_data.get('items', []) %}
+          ---- {{ node.metadata.name }} ----
+          Status: {{ (node.status.conditions | selectattr('type', 'equalto', 'Ready') | map(attribute='status') | first | default('Unknown')) }}
+          {% endfor %}
+          {% else %}
+          No nodes found.
+          {% endif %}

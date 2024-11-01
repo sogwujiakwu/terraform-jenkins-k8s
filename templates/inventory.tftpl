@@ -1,10 +1,11 @@
 [all:vars]
 ansible_ssh_common_args='-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
+ansible_python_interpreter=/usr/bin/python3
 
 [first_k8s_control_node]
 %{ for control in jsondecode(k8s_controls) ~}
 %{ if control.name == "k8s-control-01" ~}
-${control.name} ansible_host=${control.ip} ansible_user=${ansible_user} ansible_ssh_private_key_file=${ssh_private_key} # ${control.name}
+${control.name} ansible_host=${control.ip} ansible_user=${ansible_user} #ansible_ssh_private_key_file=${ssh_private_key} # ${control.name}
 %{ endif ~}
 %{ endfor ~}
 
@@ -12,12 +13,15 @@ ${control.name} ansible_host=${control.ip} ansible_user=${ansible_user} ansible_
 [other_k8s_control_nodes]
 %{ for control in jsondecode(k8s_controls) ~}
 %{ if control.name != "k8s-control-01" ~}
-${control.name} ansible_host=${control.ip} ansible_user=${ansible_user} ansible_ssh_private_key_file=${ssh_private_key} # ${control.name}
+${control.name} ansible_host=${control.ip} ansible_user=${ansible_user} #ansible_ssh_private_key_file=${ssh_private_key} # ${control.name}
 %{ endif ~}
 %{ endfor ~}
 
 [k8s_worker_nodes]
 %{ for worker in jsondecode(k8s_workers) ~}
-${worker.name} ansible_host=${worker.ip} ansible_user=${ansible_user} ansible_ssh_private_key_file=${ssh_private_key} # ${worker.name}
+${worker.name} ansible_host=${worker.ip} ansible_user=${ansible_user} #ansible_ssh_private_key_file=${ssh_private_key} # ${worker.name}
 %{ endfor ~}
 
+[k8s_control_nodes:children]
+first_k8s_control_node
+other_k8s_control_nodes

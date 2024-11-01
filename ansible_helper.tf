@@ -90,7 +90,7 @@ resource "null_resource" "provisioner" {
   }
 
   provisioner "file" {
-    source      = "${path.root}/inventory.ini"
+    source      = "${path.module}/inventory.ini"
     destination = "/home/${var.username}/inventory.ini"
 
     connection {
@@ -117,7 +117,7 @@ resource "null_resource" "copy_ansible_playbooks" {
   }
 
   provisioner "file" {
-      source = "${path.root}/ansible"
+      source = "${path.module}/ansible"
       destination = "/home/${var.username}/ansible/"
 
       connection {
