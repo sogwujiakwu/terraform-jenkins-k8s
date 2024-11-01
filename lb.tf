@@ -1,3 +1,60 @@
+# Backend service for the internal load balancer (regional scope)
+resource "google_compute_region_backend_service" "k8s_control_backend_service" {
+  name                  = "k8s-control-backend"
+  protocol              = "TCP"
+  health_checks         = [google_compute_region_health_check.k8s_control_tcp_health_check.self_link]
+  load_balancing_scheme = "INTERNAL" # Set to INTERNAL for internal load balancer
+  region                = var.region
+
+  backend {
+    group          = google_compute_instance_group.k8s_control_instance_group.self_link
+    balancing_mode = "CONNECTION"
+  }
+}
+
+# Instance group for the control plane nodes
+resource "google_compute_instance_group" "k8s_control_instance_group" {
+  name = "k8s-control-group"
+  zone = var.zone
+  instances = [
+    for control in google_compute_instance.k8s_control : control.self_link
+  ]
+}
+
+# Regional health check for the backend service
+resource "google_compute_region_health_check" "k8s_control_tcp_health_check" {
+  name               = "k8s-control-tcp-health-check"
+  region             = var.region
+  check_interval_sec = 5
+  timeout_sec        = 5
+  tcp_health_check {
+    port = 6443
+  }
+}
+
+# Reserve an internal IP address for the regional internal load balancer
+resource "google_compute_address" "k8s_lb_ip" {
+  name         = "k8s-lb-internal-ip"
+  region       = var.region
+  address_type = "INTERNAL"                                                     # Specify INTERNAL for internal load balancer
+  subnetwork   = google_compute_subnetwork.k8s_network_private_subnet.self_link # Associate with the private subnet
+}
+
+# Forwarding rule for the internal load balancer (regional scope)
+resource "google_compute_forwarding_rule" "k8s_control_forwarding_rule" {
+  name                  = "k8s-control-internal-forwarding-rule"
+  backend_service       = google_compute_region_backend_service.k8s_control_backend_service.self_link
+  load_balancing_scheme = "INTERNAL" # Set to INTERNAL
+  ip_protocol           = "TCP"
+  ports           = ["6443", "2379", "2380"]   # Specify ports as a list
+  ip_address            = google_compute_address.k8s_lb_ip.address
+  region                = var.region
+  subnetwork            = google_compute_subnetwork.k8s_network_private_subnet.self_link # Set the private subnet
+}
+
+
+
+/*
 # Backend service for the load balancer (regional scope)
 resource "google_compute_region_backend_service" "k8s_control_backend_service" {
   name                  = "k8s-control-backend"
@@ -51,7 +108,8 @@ resource "google_compute_forwarding_rule" "k8s_control_forwarding_rule" {
 }
 
 # Define your region as a variable
-/*variable "region" {
+variable "region" {
   default = "us-east1"
-}*/
+}
+*/
 
